@@ -74,15 +74,18 @@
       <div class="brand">
         <h1>GENERAL REPORT</h1>
         <div class="sub">
-          <span class="chip">Tabs: Report • January 26</span>
-          <span class="chip">Currency: OMR</span>
+          <span class="chip">Report • January 26</span>
         </div>
       </div>
 
-      <div class="tabs">
-        <button class="tabbtn active" data-tab="report">Report</button>
-        <button class="tabbtn" data-tab="jan">January 26</button>
-      </div>
+<div class="tabs" role="tablist" aria-label="Report Tabs">
+  <button class="tabbtn active" data-tab="report" role="tab" aria-selected="true">
+    📊 REPORT
+  </button>
+  <button class="tabbtn" data-tab="jan" role="tab" aria-selected="false">
+    🧾 TENANT DETAILS – JANUARY 26
+  </button>
+</div>
 
       <div class="actions" id="janActions" style="display:none">
         <input id="search" class="input" placeholder="Search unit / gateway / status…" />
@@ -102,7 +105,7 @@
       <div class="grid2">
         <div class="table-wrap" style="padding:16px">
           <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px">
-            <div style="font-weight:900;font-size:15px">Income Report Bousher DECEMBER 2025</div>
+            <div style="font-weight:900;font-size:15px">Income Report Bousher JANUARY 2025</div>
             <span class="chip">From Excel: REPORT</span>
           </div>
 
@@ -741,7 +744,7 @@
           <tfoot>
             <tr>
               <td colspan="3">TOTAL (computed)</td>
-              <td class="num mono" id="tfootTotal">13,910</td>
+              <td class="num mono" id="tfootTotal">13,880</td>
               <td class="num mono" id="tfootPaid">11,320</td>
               <td class="num mono" id="tfootRemaining">2,590</td>
               <td colspan="2"></td>
