@@ -25,7 +25,7 @@
     .sub{display:flex;flex-wrap:wrap;gap:10px;color:var(--muted);font-size:13px;line-height:1.4}
     .chip{display:inline-flex;gap:8px;align-items:center;background:rgba(176,141,87,.10);border:1px solid rgba(176,141,87,.25);color:#6b4f2a;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
 
-    /* ===== TABS (UPDATED: more obviously clickable) ===== */
+    /* ===== TABS (more obviously clickable) ===== */
     .tabs{
       display:flex;
       gap:12px;
@@ -58,10 +58,7 @@
       color:#ffffff;
       border-color:#0f172a;
     }
-    .tabbtn:active{
-      transform:translateY(0px) scale(.99);
-      box-shadow:0 6px 16px rgba(0,0,0,.12);
-    }
+    .tabbtn:active{transform:translateY(0px) scale(.99);box-shadow:0 6px 16px rgba(0,0,0,.12)}
     .tabbtn.active{
       background:#0f172a;
       color:#ffffff;
@@ -86,14 +83,17 @@
     .card .k{color:var(--muted);font-size:12px;margin-bottom:6px}
     .card .v{font-size:18px;font-weight:900;letter-spacing:.2px}
 
-    .note{background:var(--paper);border:1px dashed var(--line);border-radius:var(--radius);padding:12px 14px;color:var(--muted);font-size:12.5px;line-height:1.55}
-    .note strong{color:var(--ink)}
-
     .grid2{display:grid;grid-template-columns:2fr 1fr;gap:12px;align-items:start}
-
     .table-wrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+
     table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
-    thead th{position:sticky;top:0;z-index:2;background:linear-gradient(180deg,#fff 0%,#fafafa 100%);border-bottom:1px solid var(--line);padding:12px 10px;text-align:left;color:#111827;font-weight:900;white-space:nowrap;cursor:pointer;user-select:none}
+    thead th{
+      position:sticky;top:0;z-index:2;
+      background:linear-gradient(180deg,#fff 0%,#fafafa 100%);
+      border-bottom:1px solid var(--line);
+      padding:12px 10px;text-align:left;color:#111827;font-weight:900;
+      white-space:nowrap;cursor:pointer;user-select:none
+    }
     thead th.sort::after{content:"↕";font-weight:900;color:#9ca3af;margin-left:8px;font-size:12px}
     tbody td{padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:top}
     tbody tr:nth-child(odd){background:#fcfcfd}
@@ -132,18 +132,15 @@
         border-radius:16px;
         padding:10px;
       }
-      .tabbtn{
-        width:100%;
-        text-align:center;
-      }
+      .tabbtn{width:100%;text-align:center}
 
-      /* REPORT: make layout vertical + ensure cards are vertical */
+      /* REPORT: vertical layout + vertical cards */
       #tab-report .grid2{grid-template-columns:1fr}
       #tab-report .table-wrap{padding:14px !important}
       #tab-report .cards{grid-template-columns:1fr !important; gap:10px}
       #tab-report .card .v{font-size:17px}
 
-      /* REPORT: header area stacks nicely */
+      /* REPORT header stack */
       #tab-report .table-wrap > div:first-child{
         flex-direction:column !important;
         align-items:flex-start !important;
@@ -161,6 +158,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="page">
     <div class="topbar">
@@ -172,12 +170,8 @@
       </div>
 
       <div class="tabs" role="tablist" aria-label="Report Tabs">
-        <button class="tabbtn active" data-tab="report" role="tab" aria-selected="true">
-          📊 REPORT
-        </button>
-        <button class="tabbtn" data-tab="jan" role="tab" aria-selected="false">
-          🧾 TENANT DETAILS – JANUARY 26
-        </button>
+        <button class="tabbtn active" data-tab="report" role="tab" aria-selected="true">📊 REPORT</button>
+        <button class="tabbtn" data-tab="jan" role="tab" aria-selected="false">🧾 TENANT DETAILS – JANUARY 26</button>
       </div>
 
       <div class="actions" id="janActions" style="display:none">
@@ -273,7 +267,6 @@
           </thead>
 
           <tbody>
-            <!-- your tbody stays exactly the same -->
             <tr>
               <td class="unit">Showroom sustainable solutions</td>
               <td class="small">January</td>
@@ -285,7 +278,594 @@
               <td><span class="gateway">Cheque</span></td>
               <td class="num mono hide" data-raw="1400.000">1,400</td>
             </tr>
-            <!-- ... keep the rest of your rows unchanged ... -->
+
+            <tr>
+              <td class="unit">Shop Butchery</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="300.000">OMR 300.000</td>
+              <td class="num mono" data-raw="300.000">300</td>
+              <td class="num mono" data-raw="300.000">300</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="300.000">300</td>
+            </tr>
+
+            <tr>
+              <td class="unit">68</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="220.000">OMR 220.000</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="220.000">220</td>
+            </tr>
+
+            <tr>
+              <td class="unit">67</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="250.000">OMR 250.000</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="na"><span class="pill na"><span class="dot"></span>NA</span></td>
+              <td><span class="gateway">—</span></td>
+              <td class="num mono hide" data-raw="0.000">0</td>
+            </tr>
+
+            <tr>
+              <td class="unit">66</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Cheque</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">65</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">64</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">63</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">62</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">61</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">58</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="250.000">OMR 250.000</td>
+              <td class="num mono" data-raw="250.000">250</td>
+              <td class="num mono" data-raw="250.000">250</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="250.000">250</td>
+            </tr>
+
+            <tr>
+              <td class="unit">57</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="230.000">OMR 230.000</td>
+              <td class="num mono" data-raw="230.000">230</td>
+              <td class="num mono" data-raw="230.000">230</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Cheque</span></td>
+              <td class="num mono hide" data-raw="230.000">230</td>
+            </tr>
+
+            <tr>
+              <td class="unit">56</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">55</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">54</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td data-status="pending"><span class="pill pending"><span class="dot"></span>Pending</span></td>
+              <td><span class="gateway">Cheque</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">53</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="270.000">OMR 270.000</td>
+              <td class="num mono" data-raw="270.000">270</td>
+              <td class="num mono" data-raw="230.000">230</td>
+              <td class="num mono" data-raw="40.000">40</td>
+              <td data-status="Pending"><span class="pill pending"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="270.000">270</td>
+            </tr>
+
+            <tr>
+              <td class="unit">52</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">51</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">48</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="250.000">OMR 250.000</td>
+              <td class="num mono" data-raw="250.000">250</td>
+              <td class="num mono" data-raw="250.000">250</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="250.000">250</td>
+            </tr>
+
+            <tr>
+              <td class="unit">47</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="250.000">OMR 250.000</td>
+              <td class="num mono" data-raw="250.000">250</td>
+              <td class="num mono" data-raw="250.000">250</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="250.000">250</td>
+            </tr>
+
+            <tr>
+              <td class="unit">46</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">45</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Cheque</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">44</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">43</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="290.000">OMR 290.000</td>
+              <td class="num mono" data-raw="290.000">290</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td class="num mono" data-raw="300.000">300</td>
+              <td data-status="pending"><span class="pill pending"><span class="dot"></span>Pending</span></td>
+              <td><span class="gateway">—</span></td>
+              <td class="num mono hide" data-raw="300.000">300</td>
+            </tr>
+
+            <tr>
+              <td class="unit">42</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="270.000">OMR 270.000</td>
+              <td class="num mono" data-raw="270.000">270</td>
+              <td class="num mono" data-raw="270.000">270</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="270.000">270</td>
+            </tr>
+
+            <tr>
+              <td class="unit">41</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="220.000">OMR 220.000</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>paid</span></td>
+              <td><span class="gateway">Cheque</span></td>
+              <td class="num mono hide" data-raw="220.000">220</td>
+            </tr>
+
+            <tr>
+              <td class="unit">38</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="220.000">OMR 220.000</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="220.000">220</td>
+            </tr>
+
+            <tr>
+              <td class="unit">37</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="230.000">OMR 230.000</td>
+              <td class="num mono" data-raw="230.000">230</td>
+              <td class="num mono" data-raw="230.000">230</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="230.000">230</td>
+            </tr>
+
+            <tr>
+              <td class="unit">36</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="260.000">OMR 260.000</td>
+              <td class="num mono" data-raw="260.000">260</td>
+              <td class="num mono" data-raw="260.000">260</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="260.000">260</td>
+            </tr>
+
+            <tr>
+              <td class="unit">35</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">34</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">33</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">32</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>paid</span></td>
+              <td><span class="gateway">Cheque</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">31</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">28</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="220.000">OMR 220.000</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="220.000">220</td>
+            </tr>
+
+            <tr>
+              <td class="unit">27</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="240.000">OMR 240.000</td>
+              <td class="num mono" data-raw="240.000">240</td>
+              <td class="num mono" data-raw="240.000">240</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="240.000">240</td>
+            </tr>
+
+            <tr>
+              <td class="unit">26</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="290.000">290</td>
+              <td class="num mono" data-raw="10.000">10</td>
+              <td data-status="pending"><span class="pill pending"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="300.000">300</td>
+            </tr>
+
+            <tr>
+              <td class="unit">25</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">24</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td data-status="pending"><span class="pill pending"><span class="dot"></span>Pending</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">23</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">22</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="na"><span class="pill na"><span class="dot"></span>NA</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="0.000">0</td>
+            </tr>
+
+            <tr>
+              <td class="unit">21</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">18</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="230.000">OMR 230.000</td>
+              <td class="num mono" data-raw="230.000">230</td>
+              <td class="num mono" data-raw="230.000">230</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="230.000">230</td>
+            </tr>
+
+            <tr>
+              <td class="unit">17</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="250.000">OMR 250.000</td>
+              <td class="num mono" data-raw="250.000">250</td>
+              <td class="num mono" data-raw="250.000">250</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="250.000">250</td>
+            </tr>
+
+            <tr>
+              <td class="unit">16</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Cheque</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">15</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">14</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="220.000">OMR 220.000</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Cheque</span></td>
+              <td class="num mono hide" data-raw="220.000">220</td>
+            </tr>
+
+            <tr>
+              <td class="unit">13</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="220.000">OMR 220.000</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="220.000">220</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Cheque</span></td>
+              <td class="num mono hide" data-raw="220.000">220</td>
+            </tr>
+
+            <tr>
+              <td class="unit">12</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
+              <td><span class="gateway">Bank Transfer</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
+
+            <tr>
+              <td class="unit">11</td>
+              <td class="small">January</td>
+              <td class="num mono" data-raw="280.000">OMR 280.000</td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td class="num mono" data-raw="0.000"></td>
+              <td class="num mono" data-raw="280.000">280</td>
+              <td data-status="pending"><span class="pill pending"><span class="dot"></span>Pending</span></td>
+              <td><span class="gateway">Cheque</span></td>
+              <td class="num mono hide" data-raw="280.000">280</td>
+            </tr>
           </tbody>
 
           <tfoot>
@@ -301,7 +881,6 @@
         </table>
       </div>
     </section>
-
   </div>
 
   <script>
@@ -322,7 +901,6 @@
         Object.values(sections).forEach(s => s.classList.remove("active"));
         sections[tab].classList.add("active");
 
-        // aria-selected update
         tabButtons.forEach(b => b.setAttribute("aria-selected","false"));
         btn.setAttribute("aria-selected","true");
 
