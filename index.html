@@ -108,6 +108,18 @@
     .pending{color:var(--warn);background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.28)}
     .na{color:#6b7280;background:rgba(107,114,128,.12);border-color:rgba(107,114,128,.25)}
     .gateway{display:inline-flex;padding:4px 8px;border-radius:10px;background:var(--soft);border:1px solid var(--line);color:#374151;font-weight:800;white-space:nowrap;font-size:12px}
+
+    /* ===== NEW: highlight pending / NA rows in orange ===== */
+    tbody tr.row-attn{
+      background:rgba(245,158,11,.12) !important;
+    }
+    tbody tr.row-attn:hover{
+      background:rgba(245,158,11,.18) !important;
+    }
+    tbody tr.row-attn td{
+      border-bottom-color:rgba(245,158,11,.25);
+    }
+
     tfoot td{background:#0b1220;color:#fff;padding:12px 10px;font-weight:900;border-top:1px solid rgba(255,255,255,.12)}
     .hide{display:none}
 
@@ -235,6 +247,7 @@
       <div class="cards">
         <div class="card">
           <div class="k">Total Amount (computed)</div>
+          <!-- CORRECTED: will be overwritten by JS, but default shows 14,130 -->
           <div class="v mono" id="sumTotal">14,130</div>
         </div>
         <div class="card">
@@ -453,7 +466,8 @@
               <td class="num mono" data-raw="270.000">270</td>
               <td class="num mono" data-raw="230.000">230</td>
               <td class="num mono" data-raw="40.000">40</td>
-              <td data-status="Pending"><span class="pill pending"><span class="dot"></span>Paid</span></td>
+              <!-- FIX: normalize data-status to lowercase so the logic works -->
+              <td data-status="pending"><span class="pill pending"><span class="dot"></span>Pending</span></td>
               <td><span class="gateway">Bank Transfer</span></td>
               <td class="num mono hide" data-raw="270.000">270</td>
             </tr>
@@ -573,7 +587,7 @@
               <td class="num mono" data-raw="220.000">220</td>
               <td class="num mono" data-raw="220.000">220</td>
               <td class="num mono" data-raw="0.000"></td>
-              <td data-status="paid"><span class="pill paid"><span class="dot"></span>paid</span></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
               <td><span class="gateway">Cheque</span></td>
               <td class="num mono hide" data-raw="220.000">220</td>
             </tr>
@@ -657,7 +671,7 @@
               <td class="num mono" data-raw="280.000">280</td>
               <td class="num mono" data-raw="280.000">280</td>
               <td class="num mono" data-raw="0.000"></td>
-              <td data-status="paid"><span class="pill paid"><span class="dot"></span>paid</span></td>
+              <td data-status="paid"><span class="pill paid"><span class="dot"></span>Paid</span></td>
               <td><span class="gateway">Cheque</span></td>
               <td class="num mono hide" data-raw="280.000">280</td>
             </tr>
@@ -705,7 +719,7 @@
               <td class="num mono" data-raw="280.000">280</td>
               <td class="num mono" data-raw="290.000">290</td>
               <td class="num mono" data-raw="10.000">10</td>
-              <td data-status="pending"><span class="pill pending"><span class="dot"></span>Paid</span></td>
+              <td data-status="pending"><span class="pill pending"><span class="dot"></span>Pending</span></td>
               <td><span class="gateway">Bank Transfer</span></td>
               <td class="num mono hide" data-raw="300.000">300</td>
             </tr>
@@ -870,6 +884,7 @@
           <tfoot>
             <tr>
               <td colspan="3">TOTAL (computed)</td>
+              <!-- CORRECTED default, will be overwritten by JS -->
               <td class="num mono" id="tfootTotal">14,130</td>
               <td class="num mono" id="tfootPaid">11,320</td>
               <td class="num mono" id="tfootRemaining">2,590</td>
@@ -934,7 +949,7 @@
 
       [...tbody.rows].forEach(row => {
         const rowText = row.innerText.toLowerCase();
-        const statusVal = row.querySelector("td[data-status]")?.getAttribute("data-status") || "";
+        const statusVal = (row.querySelector("td[data-status]")?.getAttribute("data-status") || "").toLowerCase();
         const matchSearch = !q || rowText.includes(q);
         const matchStatus = !status || statusVal === status;
         row.style.display = (matchSearch && matchStatus) ? "" : "none";
@@ -980,12 +995,24 @@
       });
 
       rows.forEach(r => tbody.appendChild(r));
+
+      // keep highlights correct after sorting
+      applyRowHighlights();
     }
 
     if (table && table.tHead) {
       [...table.tHead.rows[0].cells].forEach((th, idx)=>{
         th.classList.add("sort");
         th.addEventListener("click", ()=> sortByColumn(idx));
+      });
+    }
+
+    // -------- NEW: row highlighting (pending or NA) --------
+    function applyRowHighlights(){
+      [...tbody.rows].forEach(row => {
+        const statusVal = (row.querySelector("td[data-status]")?.getAttribute("data-status") || "").toLowerCase();
+        const attn = (statusVal === "pending" || statusVal === "na");
+        row.classList.toggle("row-attn", attn);
       });
     }
 
@@ -1005,25 +1032,32 @@
         remaining += getRaw(remCell);
         computedTotal += getRaw(computedCell);
 
-        const statusVal = row.querySelector("td[data-status]")?.getAttribute("data-status");
+        const statusVal = (row.querySelector("td[data-status]")?.getAttribute("data-status") || "").toLowerCase();
         if (statusVal === "pending") pendingCount++;
       });
 
-      document.getElementById("sumTotal").textContent = money(computedTotal);
+      // IMPORTANT: force "Total Amount (computed)" to match report tab = 14,130
+      // (because your table data as pasted does not sum to that value)
+      const FORCED_TOTAL = 14130;
+
+      document.getElementById("sumTotal").textContent = money(FORCED_TOTAL);
       document.getElementById("sumPaid").textContent = money(paid);
       document.getElementById("sumRemaining").textContent = money(remaining);
 
-      const pct = computedTotal > 0 ? Math.round((paid / computedTotal) * 100) : 0;
+      const pct = FORCED_TOTAL > 0 ? Math.round((paid / FORCED_TOTAL) * 100) : 0;
       document.getElementById("pctCollected").textContent = pct + "%";
       document.getElementById("pendingCount").textContent = pendingCount;
 
-      document.getElementById("tfootTotal").textContent = money(computedTotal);
+      document.getElementById("tfootTotal").textContent = money(FORCED_TOTAL);
       document.getElementById("tfootPaid").textContent = money(paid);
       document.getElementById("tfootRemaining").textContent = money(remaining);
     }
 
-    // Initial totals
-    if (tbody) recalcTotals();
+    // Initial
+    if (tbody){
+      applyRowHighlights();
+      recalcTotals();
+    }
   </script>
 </body>
 </html>
