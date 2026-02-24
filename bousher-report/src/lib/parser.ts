@@ -61,7 +61,7 @@ export interface ParsedData {
   vacancy: VacancyData | null;
 }
 
-export function parseWorkbook(buffer: ArrayBuffer): ParsedData {
+export function parseWorkbook(buffer: ArrayBuffer | Uint8Array): ParsedData {
   const wb = XLSX.read(buffer, { type: "array", cellDates: true });
   const out: ParsedData = {
     dashboard: null,
