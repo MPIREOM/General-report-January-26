@@ -168,12 +168,31 @@ function UploadScreen({ onData }: { onData: (d: ParsedData) => void }) {
 
 // ─── DASHBOARD VIEW ───
 
-function DashView({ data, onReset }: { data: ParsedData; onReset: () => void }) {
+function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedData) => void }) {
   const mob = useMobile();
   const [tab, setTab] = useState("Overview");
   const [tf, setTf] = useState("all");
   const [ts, setTs] = useState("");
   const [sm, setSm] = useState("");
+  const [uploadErr, setUploadErr] = useState<string | null>(null);
+
+  const handleFile = (file: File | undefined) => {
+    if (!file) return;
+    if (!file.name.match(/\.xlsx?$/i)) { setUploadErr("Please upload an .xlsx file"); return; }
+    setUploadErr(null);
+    const r = new FileReader();
+    r.onload = (e) => {
+      try {
+        const d = parseWorkbook(new Uint8Array(e.target!.result as ArrayBuffer));
+        if (!d.dashboard) { setUploadErr("Missing DASHBOARD sheet"); return; }
+        if (!d.tenants.length) { setUploadErr("Missing Tenant Master data"); return; }
+        onUpdate(d);
+        setUploadErr(null);
+      } catch (x: any) { setUploadErr("Error: " + x.message); }
+    };
+    r.onerror = () => { setUploadErr("Read failed"); };
+    r.readAsArrayBuffer(file);
+  };
 
   const db = data.dashboard!;
   const tenants = data.tenants;
@@ -242,9 +261,15 @@ function DashView({ data, onReset }: { data: ParsedData; onReset: () => void }) 
               <div style={{ color: C.text, fontWeight: 600 }}>{cm}</div>
               <div>{vac ? vac.totalUnits : tenants.length} Units</div>
             </div>
-            <button onClick={onReset} style={{ padding: "8px 14px", minHeight: 36, borderRadius: 8, border: `1px solid ${C.teal}`, background: "rgba(20,184,166,0.1)", color: C.teal, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>📤 Upload New</button>
+            <input id="update-file" type="file" accept=".xlsx,.xls" onChange={(e) => { handleFile(e.target.files?.[0]); e.target.value = ""; }} style={{ display: "none" }} />
+            <button onClick={() => document.getElementById("update-file")?.click()} style={{ padding: "8px 14px", minHeight: 36, borderRadius: 8, border: `1px solid ${C.teal}`, background: "rgba(20,184,166,0.1)", color: C.teal, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>📤 Update Data</button>
           </div>
         </div>
+        {uploadErr && (
+          <div style={{ padding: "6px 14px", background: "rgba(239,68,68,0.1)", borderBottom: `1px solid rgba(239,68,68,0.2)` }}>
+            <p style={{ margin: 0, color: C.red, fontSize: 11 }}>{uploadErr}</p>
+          </div>
+        )}
         {/* Mobile tab bar — horizontally scrollable */}
         {mob && (
           <div className="tab-scroll" style={{ padding: "0 14px 10px", gap: 6 }}>
@@ -455,12 +480,6 @@ export default function Dashboard() {
     fetch("/api/data", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }).catch(() => {});
   };
 
-  const handleReset = () => {
-    setData(null);
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
-    fetch("/api/data", { method: "DELETE" }).catch(() => {});
-  };
-
   if (!loaded) return null;
-  return data ? <DashView data={data} onReset={handleReset} /> : <UploadScreen onData={handleData} />;
+  return data ? <DashView data={data} onUpdate={handleData} /> : <UploadScreen onData={handleData} />;
 }
