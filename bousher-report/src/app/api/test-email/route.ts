@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { list } from "@vercel/blob";
 import { Resend } from "resend";
 import type { ParsedData } from "@/lib/parser";
 import { buildEmailHtml } from "@/lib/email";
+
+const BLOB_KEY = "mpire-dashboard.json";
 
 const SAMPLE_DATA: ParsedData = {
   dashboard: {
@@ -40,6 +43,20 @@ const SAMPLE_DATA: ParsedData = {
   vacancy: { totalUnits: 50, vacant: 2, occupancy: 0.96 },
 };
 
+async function fetchDashboardData(): Promise<{ data: ParsedData; source: "live" | "sample" }> {
+  try {
+    const { blobs } = await list({ prefix: BLOB_KEY, limit: 1 });
+    if (blobs.length) {
+      const res = await fetch(blobs[0].url);
+      const data: ParsedData = await res.json();
+      if (data?.dashboard) {
+        return { data, source: "live" };
+      }
+    }
+  } catch {}
+  return { data: SAMPLE_DATA, source: "sample" };
+}
+
 export async function POST(req: Request) {
   let emailTo: string;
 
@@ -59,20 +76,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "RESEND_API_KEY not configured. Add it to your .env.local file." }, { status: 500 });
   }
 
-  const html = buildEmailHtml(SAMPLE_DATA);
+  const { data: emailData, source } = await fetchDashboardData();
+  const html = buildEmailHtml(emailData);
 
   try {
     const resend = new Resend(resendKey);
+    const cm = emailData.dashboard!.months[emailData.dashboard!.months.length - 1];
+    const subjectPrefix = source === "sample" ? "[TEST - SAMPLE DATA] " : "[TEST] ";
     const { data, error } = await resend.emails.send({
       from: process.env.REPORT_EMAIL_FROM || "MPIRE Reports <reports@resend.dev>",
       to: emailTo.split(",").map((e) => e.trim()),
-      subject: `[TEST] MPIRE Weekly Report — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+      subject: `${subjectPrefix}MPIRE Weekly Report — ${cm} · ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
       html,
     });
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ ok: true, sentTo: emailTo, id: data?.id });
+    return NextResponse.json({ ok: true, sentTo: emailTo, id: data?.id, dataSource: source });
   } catch (e: any) {
     return NextResponse.json({ error: "Send failed: " + e.message }, { status: 500 });
   }

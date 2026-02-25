@@ -301,7 +301,7 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
         <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setEmailModal(false)}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24, maxWidth: 400, width: "100%" }}>
             <h3 style={{ color: C.text, fontSize: 16, fontWeight: 700, margin: "0 0 4px" }}>Send Test Email</h3>
-            <p style={{ color: C.dim, fontSize: 11, margin: "0 0 16px" }}>Sends a sample report with mock data to verify your email setup.</p>
+            <p style={{ color: C.dim, fontSize: 11, margin: "0 0 16px" }}>Sends a report using your live dashboard data to verify your email setup.</p>
             <input
               value={emailTo} onChange={(e) => setEmailTo(e.target.value)}
               placeholder="recipient@example.com"
