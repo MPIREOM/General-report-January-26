@@ -4,6 +4,7 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -11,6 +12,8 @@ body {
   padding: 0;
   background: #0B0F1A;
   color: #f1f5f9;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @keyframes sp {
@@ -30,4 +33,102 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
+}
+
+/* ── Safari / iOS fixes ── */
+
+/* Safe area insets for notched iPhones */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Momentum scrolling for iOS Safari */
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+.scroll-touch-x {
+  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+}
+
+/* Fix Safari 100vh issue — use dvh where supported */
+.min-h-screen-safe {
+  min-height: 100vh;
+}
+@supports (min-height: 100dvh) {
+  .min-h-screen-safe {
+    min-height: 100dvh;
+  }
+}
+
+/* Prevent iOS text size adjust on orientation change */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* ── Responsive grid helpers ── */
+
+.grid-kpi {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.grid-charts {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 12px;
+}
+
+.grid-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── Mobile tab bar ── */
+
+.tab-scroll {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+.tab-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Mobile breakpoint ── */
+
+@media (max-width: 767px) {
+  .grid-kpi {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .grid-charts {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .grid-split {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .mobile-stack {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  /* Make filter row wrap nicely on mobile */
+  .filter-row {
+    gap: 6px;
+  }
 }
