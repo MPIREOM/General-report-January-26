@@ -96,7 +96,7 @@ export async function POST(req: Request) {
     const { data, error } = await resend.emails.send({
       from: process.env.REPORT_EMAIL_FROM || "MPIRE Reports <reports@resend.dev>",
       to: emailTo.split(",").map((e) => e.trim()),
-      subject: `${subjectPrefix}MPIRE Weekly Report — ${cm} · ${now.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+      subject: `${subjectPrefix}Bousher Report — ${cm} · ${now.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
       html,
     });
     if (error) {
