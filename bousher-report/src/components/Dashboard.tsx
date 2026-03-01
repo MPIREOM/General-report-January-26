@@ -174,6 +174,7 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
   const [tf, setTf] = useState("all");
   const [ts, setTs] = useState("");
   const [sm, setSm] = useState("");
+  const [om, setOm] = useState("");
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const [emailModal, setEmailModal] = useState(false);
   const [emailTo, setEmailTo] = useState("");
@@ -202,6 +203,7 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
         if (!d.dashboard) { setUploadErr("Missing DASHBOARD sheet"); return; }
         if (!d.tenants.length) { setUploadErr("Missing Tenant Master data"); return; }
         setSm("");
+        setOm("");
         onUpdate(d);
         setUploadErr(null);
       } catch (x: any) { setUploadErr("Error: " + x.message); }
@@ -216,12 +218,13 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
   const ms = data.monthlySheets;
   const vac = data.vacancy;
   const months = db.months;
-  const ci = months.length - 1;
-  const pi = ci - 1;
-  const cm = months[ci];
+  const ci = om ? months.indexOf(om) : months.length - 1;
+  const oi = ci >= 0 ? ci : months.length - 1;
+  const pi = oi - 1;
+  const cm = months[oi];
 
-  const rt = pi >= 0 && db.collectionRate[pi] ? ((db.collectionRate[ci] - db.collectionRate[pi]) / db.collectionRate[pi]) * 100 : 0;
-  const ct = pi >= 0 && db.totalCollected[pi] ? ((db.totalCollected[ci] - db.totalCollected[pi]) / db.totalCollected[pi]) * 100 : 0;
+  const rt = pi >= 0 && db.collectionRate[pi] ? ((db.collectionRate[oi] - db.collectionRate[pi]) / db.collectionRate[pi]) * 100 : 0;
+  const ct = pi >= 0 && db.totalCollected[pi] ? ((db.totalCollected[oi] - db.totalCollected[pi]) / db.totalCollected[pi]) * 100 : 0;
 
   const rc = months.map((m, i) => ({ month: m, Due: db.totalDue[i], Collected: db.totalCollected[i] }));
   const rac = months.map((m, i) => ({ month: m, Rate: (db.collectionRate[i] || 0) * 100 }));
@@ -327,15 +330,19 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
         {/* OVERVIEW */}
         {tab === "Overview" && (
           <div>
+            <div className="tab-scroll" style={{ margin: "12px 0", gap: 6, alignItems: "center", flexWrap: mob ? "nowrap" : "wrap", display: "flex" }}>
+              <span style={{ color: C.muted, fontSize: 10, flexShrink: 0 }}>Month:</span>
+              {months.map((k) => <Fb key={k} active={cm === k} onClick={() => setOm(k)}>{k}</Fb>)}
+            </div>
             <div className="grid-kpi">
-              <KPI label="Rent Due" value={`${fmt(db.totalDue[ci])} OMR`} sub={cm} />
-              <KPI label="Collected" value={`${fmt(db.totalCollected[ci])} OMR`} sub={`${db.unitsPaid[ci]} units`} trend={ct} color={C.green} />
-              <KPI label="Outstanding" value={`${fmt(db.totalOutstanding[ci])} OMR`} sub={`Prev: ${fmt(db.unpaidPrev[ci])}`} color={C.red} />
-              <KPI label="Collection Rate" value={pct(db.collectionRate[ci])} trend={rt} color={db.collectionRate[ci] > 0.9 ? C.green : C.amber} />
+              <KPI label="Rent Due" value={`${fmt(db.totalDue[oi])} OMR`} sub={cm} />
+              <KPI label="Collected" value={`${fmt(db.totalCollected[oi])} OMR`} sub={`${db.unitsPaid[oi]} units`} trend={ct} color={C.green} />
+              <KPI label="Outstanding" value={`${fmt(db.totalOutstanding[oi])} OMR`} sub={`Prev: ${fmt(db.unpaidPrev[oi])}`} color={C.red} />
+              <KPI label="Collection Rate" value={pct(db.collectionRate[oi])} trend={rt} color={db.collectionRate[oi] > 0.9 ? C.green : C.amber} />
             </div>
             <div className="grid-split" style={{ marginTop: 12 }}>
-              {[{ label: "MPIRE", color: C.mpire, due: db.mpireDue[ci], col: db.mpireCollected[ci], out: db.mpireOutstanding[ci] },
-                { label: "OWNER", color: C.owner, due: db.ownerDue[ci], col: db.ownerCollected[ci], out: db.ownerOutstanding[ci] }
+              {[{ label: "MPIRE", color: C.mpire, due: db.mpireDue[oi], col: db.mpireCollected[oi], out: db.mpireOutstanding[oi] },
+                { label: "OWNER", color: C.owner, due: db.ownerDue[oi], col: db.ownerCollected[oi], out: db.ownerOutstanding[oi] }
               ].map((x) => (
                 <div key={x.label} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: mob ? "14px 14px" : "16px 20px", borderLeft: `4px solid ${x.color}` }}>
                   <p style={{ color: C.muted, fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 8px" }}>{x.label}</p>
