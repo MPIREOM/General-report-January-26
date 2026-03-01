@@ -210,5 +210,70 @@ export function parseWorkbook(buffer: ArrayBuffer | Uint8Array): ParsedData {
     out.vacancy = { totalUnits: tu, vacant: vc, occupancy: oc };
   }
 
+  // Sync dashboard months with monthly sheets — compute aggregates for any
+  // month that exists as a sheet tab but is missing from the DASHBOARD summary
+  if (out.dashboard) {
+    const moOrder = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+    const sortMonth = (a: string, b: string) => {
+      const ap = a.split(" "), bp = b.split(" ");
+      const yd = Number(ap[1]) - Number(bp[1]);
+      return yd !== 0 ? yd : moOrder.indexOf(ap[0].toUpperCase()) - moOrder.indexOf(bp[0].toUpperCase());
+    };
+    const dbMonths = new Set(out.dashboard.months.map((m) => m.toUpperCase()));
+    const sheetMonths = Object.keys(out.monthlySheets)
+      .filter((m) => !dbMonths.has(m.toUpperCase()))
+      .sort(sortMonth);
+
+    for (const m of sheetMonths) {
+      const payments = out.monthlySheets[m];
+      const totalDue = payments.reduce((s, p) => s + p.due, 0);
+      const totalCollected = payments.reduce((s, p) => s + p.paid, 0);
+      const totalOutstanding = payments.reduce((s, p) => s + p.balance, 0);
+      const rate = totalDue > 0 ? totalCollected / totalDue : 0;
+      const paidCount = payments.filter((p) => p.status === "Paid").length;
+      const totalCount = payments.filter((p) => p.status !== "N/A").length;
+      const unpaidPrev = payments.reduce((s, p) => s + p.prevBalance, 0);
+      const mpire = payments.filter((p) => p.paidTo === "MPIRE");
+      const owner = payments.filter((p) => p.paidTo === "OWNER");
+
+      out.dashboard.months.push(m);
+      out.dashboard.totalDue.push(totalDue);
+      out.dashboard.totalCollected.push(totalCollected);
+      out.dashboard.totalOutstanding.push(totalOutstanding);
+      out.dashboard.collectionRate.push(rate);
+      out.dashboard.unitsPaid.push(`${paidCount}/${totalCount}`);
+      out.dashboard.unpaidPrev.push(unpaidPrev);
+      out.dashboard.mpireDue.push(mpire.reduce((s, p) => s + p.due, 0));
+      out.dashboard.mpireCollected.push(mpire.reduce((s, p) => s + p.paid, 0));
+      out.dashboard.mpireOutstanding.push(mpire.reduce((s, p) => s + p.balance, 0));
+      out.dashboard.ownerDue.push(owner.reduce((s, p) => s + p.due, 0));
+      out.dashboard.ownerCollected.push(owner.reduce((s, p) => s + p.paid, 0));
+      out.dashboard.ownerOutstanding.push(owner.reduce((s, p) => s + p.balance, 0));
+    }
+
+    // Re-sort dashboard arrays so months are in chronological order
+    if (sheetMonths.length > 0) {
+      const indices = out.dashboard.months
+        .map((m, i) => ({ m, i }))
+        .sort((a, b) => sortMonth(a.m, b.m))
+        .map((x) => x.i);
+      const reorder = <T,>(arr: T[]) => indices.map((i) => arr[i]);
+      out.dashboard.months = reorder(out.dashboard.months);
+      out.dashboard.totalDue = reorder(out.dashboard.totalDue);
+      out.dashboard.totalCollected = reorder(out.dashboard.totalCollected);
+      out.dashboard.totalOutstanding = reorder(out.dashboard.totalOutstanding);
+      out.dashboard.collectionRate = reorder(out.dashboard.collectionRate);
+      out.dashboard.unitsPaid = reorder(out.dashboard.unitsPaid);
+      out.dashboard.unpaidPrev = reorder(out.dashboard.unpaidPrev);
+      out.dashboard.mpireDue = reorder(out.dashboard.mpireDue);
+      out.dashboard.mpireCollected = reorder(out.dashboard.mpireCollected);
+      out.dashboard.mpireOutstanding = reorder(out.dashboard.mpireOutstanding);
+      out.dashboard.ownerDue = reorder(out.dashboard.ownerDue);
+      out.dashboard.ownerCollected = reorder(out.dashboard.ownerCollected);
+      out.dashboard.ownerOutstanding = reorder(out.dashboard.ownerOutstanding);
+      out.months = out.dashboard.months;
+    }
+  }
+
   return out;
 }
