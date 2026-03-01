@@ -201,6 +201,7 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
         const d = parseWorkbook(new Uint8Array(e.target!.result as ArrayBuffer));
         if (!d.dashboard) { setUploadErr("Missing DASHBOARD sheet"); return; }
         if (!d.tenants.length) { setUploadErr("Missing Tenant Master data"); return; }
+        setSm("");
         onUpdate(d);
         setUploadErr(null);
       } catch (x: any) { setUploadErr("Error: " + x.message); }
