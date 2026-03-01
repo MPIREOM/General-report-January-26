@@ -6,11 +6,30 @@ const pct = (n: number) => (n * 100).toFixed(1) + "%";
 export function buildEmailHtml(data: ParsedData): string {
   const db = data.dashboard!;
   const months = db.months;
-  const ci = months.length - 1;
-  const cm = months[ci];
   const tenants = data.tenants;
   const ph = data.paymentHistory;
   const vac = data.vacancy;
+
+  // Pick the report month based on send date:
+  // - 1st of the month → previous month's report
+  // - Any other day → current month's report
+  const moArr = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+  const now = new Date();
+  const day = now.getDate();
+  let targetMonth: number, targetYear: number;
+  if (day === 1) {
+    // Previous month
+    targetMonth = now.getMonth() - 1;
+    targetYear = now.getFullYear();
+    if (targetMonth < 0) { targetMonth = 11; targetYear--; }
+  } else {
+    targetMonth = now.getMonth();
+    targetYear = now.getFullYear();
+  }
+  const targetName = `${moArr[targetMonth]} ${String(targetYear).slice(-2)}`;
+  const targetIdx = months.findIndex((m) => m.toUpperCase() === targetName);
+  const ci = targetIdx >= 0 ? targetIdx : months.length - 1;
+  const cm = months[ci];
 
   const totalUnits = vac ? vac.totalUnits : tenants.length;
   const due = db.totalDue[ci];
@@ -21,15 +40,15 @@ export function buildEmailHtml(data: ParsedData): string {
   // Late / at-risk tenants
   const atRisk = ph.filter((p) => p.timesLate >= 2);
 
-  // Current month's unpaid/partial tenants from latest monthly sheet
-  const moArr = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+  // Target month's unpaid/partial tenants from monthly sheet
   const msk = Object.keys(data.monthlySheets).sort((a, b) => {
     const ap = a.split(" "), bp = b.split(" ");
     const yd = Number(ap[1]) - Number(bp[1]);
     return yd !== 0 ? yd : moArr.indexOf(ap[0].toUpperCase()) - moArr.indexOf(bp[0].toUpperCase());
   });
-  const latestMonth = msk.length ? msk[msk.length - 1] : "";
-  const latestPayments = data.monthlySheets[latestMonth] || [];
+  // Use the report month's sheet if available, otherwise fall back to the latest
+  const reportMonthKey = msk.find((m) => m.toUpperCase() === cm.toUpperCase()) || (msk.length ? msk[msk.length - 1] : "");
+  const latestPayments = data.monthlySheets[reportMonthKey] || [];
   const unpaid = latestPayments.filter((p) => p.status !== "Paid" && p.status !== "N/A");
 
   const rateColor = rate > 0.9 ? "#22c55e" : rate > 0.7 ? "#f59e0b" : "#ef4444";
@@ -113,7 +132,7 @@ export function buildEmailHtml(data: ParsedData): string {
   ${unpaid.length > 0 ? `
   <!-- Unpaid / Partial -->
   <div style="background:#111827;border:1px solid #1e293b;border-radius:12px;padding:16px;margin-bottom:16px;">
-    <p style="color:#94a3b8;font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 10px;">⚠ Unpaid / Partial — ${latestMonth} (${unpaid.length})</p>
+    <p style="color:#94a3b8;font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 10px;">⚠ Unpaid / Partial — ${cm} (${unpaid.length})</p>
     <table width="100%" cellpadding="0" cellspacing="0" style="font-size:11px;">
       <tr style="border-bottom:1px solid #1e293b;">
         <td style="color:#94a3b8;font-size:9px;padding:6px 0;font-weight:500;">Unit</td>
