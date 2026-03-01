@@ -79,14 +79,24 @@ export async function POST(req: Request) {
   const { data: emailData, source } = await fetchDashboardData();
   const html = buildEmailHtml(emailData);
 
+  // Determine report month (same logic as buildEmailHtml):
+  // 1st of month → previous month, otherwise → current month
+  const moNames = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+  const now = new Date();
+  let tm = now.getMonth(), ty = now.getFullYear();
+  if (now.getDate() === 1) { tm--; if (tm < 0) { tm = 11; ty--; } }
+  const targetName = `${moNames[tm]} ${String(ty).slice(-2)}`;
+  const months = emailData.dashboard!.months;
+  const ti = months.findIndex((m) => m.toUpperCase() === targetName);
+  const cm = months[ti >= 0 ? ti : months.length - 1];
+
   try {
     const resend = new Resend(resendKey);
-    const cm = emailData.dashboard!.months[emailData.dashboard!.months.length - 1];
     const subjectPrefix = source === "sample" ? "[TEST - SAMPLE DATA] " : "[TEST] ";
     const { data, error } = await resend.emails.send({
       from: process.env.REPORT_EMAIL_FROM || "MPIRE Reports <reports@resend.dev>",
       to: emailTo.split(",").map((e) => e.trim()),
-      subject: `${subjectPrefix}MPIRE Weekly Report — ${cm} · ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+      subject: `${subjectPrefix}MPIRE Weekly Report — ${cm} · ${now.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
       html,
     });
     if (error) {
