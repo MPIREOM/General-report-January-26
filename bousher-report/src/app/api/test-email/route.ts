@@ -92,7 +92,7 @@ export async function POST(req: Request) {
 
   try {
     const resend = new Resend(resendKey);
-    const subjectPrefix = source === "sample" ? "[TEST - SAMPLE DATA] " : "[TEST] ";
+    const subjectPrefix = source === "sample" ? "[SAMPLE DATA] " : "";
     const { data, error } = await resend.emails.send({
       from: process.env.REPORT_EMAIL_FROM || "MPIRE Reports <reports@resend.dev>",
       to: emailTo.split(",").map((e) => e.trim()),
