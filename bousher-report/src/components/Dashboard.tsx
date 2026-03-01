@@ -29,6 +29,16 @@ function useMobile(breakpoint = 768) {
 const fmt = (n: any) => typeof n === "number" ? n.toLocaleString("en-US") : String(n ?? "—");
 const pct = (n: any) => typeof n === "number" ? (n * 100).toFixed(1) + "%" : "—";
 
+const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <rect width="120" height="120" rx="20" fill="#1a1225"/>
+  <path d="M20 95V45l20 28 20-28v50" stroke="#9B1B30" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M60 95V45l20 28 20-28v50" stroke="#9B1B30" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>`;
+
+function MpireLogo({ size = 32 }: { size?: number }) {
+  return <div style={{ width: size, height: size, flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: LOGO_SVG }} />;
+}
+
 // ─── SUB-COMPONENTS ───
 
 function KPI({ label, value, sub, trend, color }: { label: string; value: string; sub?: string; trend?: number; color?: string }) {
@@ -134,7 +144,7 @@ function UploadScreen({ onData }: { onData: (d: ParsedData) => void }) {
   return (
     <div className="min-h-screen-safe" style={{ background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center", maxWidth: 460, padding: "0 20px", width: "100%" }}>
-        <div style={{ width: 50, height: 50, borderRadius: 13, background: `linear-gradient(135deg, ${C.teal}, ${C.mpire})`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 20, fontWeight: 700, color: "#fff" }}>M</div>
+        <div style={{ width: 50, height: 50, margin: "0 auto 20px" }}><MpireLogo size={50} /></div>
         <h1 style={{ color: C.text, fontSize: 24, fontWeight: 700, margin: "0 0 6px" }}>MPIRE Dashboard</h1>
         <p style={{ color: C.muted, fontSize: 13, margin: "0 0 28px" }}>Upload your rent collection report</p>
         <div
@@ -264,7 +274,7 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
         {/* Top row: logo + info */}
         <div style={{ padding: mob ? "10px 14px" : "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${C.teal}, ${C.mpire})`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, color: "#fff", flexShrink: 0 }}>M</div>
+            <MpireLogo size={32} />
             <div><h1 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>MPIRE</h1><p style={{ margin: 0, fontSize: 8, color: C.dim, letterSpacing: "0.06em" }}>RENT COLLECTION</p></div>
           </div>
           {/* Desktop tabs */}

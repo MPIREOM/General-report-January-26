@@ -42,7 +42,13 @@ export function buildEmailHtml(data: ParsedData): string {
 
   <!-- Header -->
   <div style="text-align:center;margin-bottom:24px;">
-    <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#14b8a6,#6366f1);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;">M</div>
+    <div style="display:inline-block;width:40px;height:40px;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none" width="40" height="40">
+        <rect width="120" height="120" rx="20" fill="#1a1225"/>
+        <path d="M20 95V45l20 28 20-28v50" stroke="#9B1B30" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M60 95V45l20 28 20-28v50" stroke="#9B1B30" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
     <h1 style="color:#f1f5f9;font-size:20px;font-weight:700;margin:12px 0 4px;">Weekly Rent Report</h1>
     <p style="color:#94a3b8;font-size:12px;margin:0;">${cm} · ${totalUnits} Units · Generated ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
   </div>
