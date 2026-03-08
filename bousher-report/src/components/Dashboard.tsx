@@ -611,159 +611,135 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
           </div>
         )}
         {tab === "Expenses" && expenses.length > 0 && (
-          <div>
-            {/* KPI ROW + FILTERS */}
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-start", marginBottom: 16 }}>
-              {/* 3 KPI Cards */}
-              <div style={{ display: "flex", gap: 12, flex: "1 1 auto", flexWrap: "wrap", minWidth: 0 }}>
-                <div style={{ flex: "1 1 180px", background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 20px" }}>
-                  <p style={{ margin: 0, fontSize: 11, color: C.muted, fontWeight: 500 }}>Total Expense Amount</p>
-                  <p style={{ margin: "6px 0 0", fontSize: 26, fontWeight: 800, color: C.text, letterSpacing: "-0.02em" }}>{fmt(expTotalAmount.toFixed(2))}</p>
-                </div>
-                <div style={{ flex: "1 1 180px", background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 20px" }}>
-                  <p style={{ margin: 0, fontSize: 11, color: C.muted, fontWeight: 500 }}>Total Paid by Owner</p>
-                  <p style={{ margin: "6px 0 0", fontSize: 26, fontWeight: 800, color: C.owner, letterSpacing: "-0.02em" }}>{fmt(expTotalPaidByOwner.toFixed(2))}</p>
-                </div>
-                <div style={{ flex: "1 1 180px", background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 20px" }}>
-                  <p style={{ margin: 0, fontSize: 11, color: C.muted, fontWeight: 500 }}>{expTotalPending >= 0 ? "Total Pending to MPIRE" : "Total Pending to Owner"}</p>
-                  <p style={{ margin: "6px 0 0", fontSize: 26, fontWeight: 800, color: expTotalPending >= 0 ? C.red : C.green, letterSpacing: "-0.02em" }}>{fmt(Math.abs(expTotalPending).toFixed(2))}</p>
-                </div>
-              </div>
-              {/* Filters */}
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", minWidth: mob ? "100%" : 320 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                  <label style={{ fontSize: 9, color: C.dim, fontWeight: 600, textTransform: "uppercase" }}>Category</label>
-                  <select value={efCat} onChange={(e) => setEfCat(e.target.value)} style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.card, color: C.text, fontSize: 11, fontFamily: "inherit", minWidth: 120, outline: "none" }}>
-                    <option value="all">All</option>
-                    {expCategories.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                  <label style={{ fontSize: 9, color: C.dim, fontWeight: 600, textTransform: "uppercase" }}>Year</label>
-                  <select value={efYear} onChange={(e) => setEfYear(e.target.value)} style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.card, color: C.text, fontSize: 11, fontFamily: "inherit", minWidth: 80, outline: "none" }}>
-                    <option value="all">All</option>
-                    {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
-                  </select>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                  <label style={{ fontSize: 9, color: C.dim, fontWeight: 600, textTransform: "uppercase" }}>Description</label>
-                  <select value={efDesc} onChange={(e) => setEfDesc(e.target.value)} style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.card, color: C.text, fontSize: 11, fontFamily: "inherit", minWidth: 120, maxWidth: 160, outline: "none" }}>
-                    <option value="all">All</option>
-                    {expDescriptions.map((d) => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                  <label style={{ fontSize: 9, color: C.dim, fontWeight: 600, textTransform: "uppercase" }}>Month</label>
-                  <select value={efMonth} onChange={(e) => setEfMonth(e.target.value)} style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.card, color: C.text, fontSize: 11, fontFamily: "inherit", minWidth: 100, outline: "none" }}>
-                    <option value="all">All</option>
-                    {expMonthNames.map((m) => <option key={m} value={m}>{m}</option>)}
-                  </select>
-                </div>
-                <button onClick={clearExpFilters} style={{ padding: "7px 14px", borderRadius: 7, border: `1px solid ${C.border}`, background: "rgba(239,68,68,0.1)", color: C.red, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Clear Filters</button>
-              </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* ROW 1: KPI Cards – full width, equal sizing */}
+            <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr 1fr", gap: 14 }}>
+              <KPI label="Total Expense Amount" value={fmt(expTotalAmount.toFixed(2))} color={C.text} />
+              <KPI label="Total Paid by Owner" value={fmt(expTotalPaidByOwner.toFixed(2))} color={C.owner} />
+              <KPI label={expTotalPending >= 0 ? "Total Pending to MPIRE" : "Total Pending to Owner"} value={fmt(Math.abs(expTotalPending).toFixed(2))} color={expTotalPending >= 0 ? C.red : C.green} />
             </div>
 
-            {/* MAIN CONTENT: Table left, Charts right */}
-            <div style={{ display: "flex", gap: 16, flexWrap: mob ? "wrap" : "nowrap" }}>
-              {/* LEFT: Expense Table */}
-              <div style={{ flex: mob ? "1 1 100%" : "0 0 42%", minWidth: 0 }}>
-                <div className="scroll-touch scroll-touch-x" style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "auto", maxHeight: mob ? "55vh" : 540 }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, minWidth: 360 }}>
-                    <thead><tr>
-                      <Th>Description</Th>
-                      <Th>Date</Th>
-                      <Th align="right">Total Amount</Th>
-                    </tr></thead>
-                    <tbody>
-                      {filteredExpenses.map((e, i) => (
-                        <tr key={i} style={{ borderBottom: `1px solid ${C.border}` }}>
-                          <td style={{ padding: "7px 12px", color: C.text, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.description}</td>
-                          <td style={{ padding: "7px 12px", color: C.muted, whiteSpace: "nowrap", fontSize: 10 }}>{e.date}</td>
-                          <td style={{ padding: "7px 12px", color: C.text, fontWeight: 500, whiteSpace: "nowrap", textAlign: "right" }}>{e.amount > 0 ? e.amount.toFixed(2) : "—"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr style={{ borderTop: `2px solid ${C.border}` }}>
-                        <td colSpan={2} style={{ padding: "8px 12px", fontWeight: 700, color: C.text, fontSize: 12 }}>Total</td>
-                        <td style={{ padding: "8px 12px", fontWeight: 700, color: C.text, fontSize: 12, textAlign: "right" }}>{fmt(filteredExpenses.reduce((s, e) => s + e.amount, 0).toFixed(2))}</td>
+            {/* ROW 2: Filters */}
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "12px 20px", display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <label style={{ fontSize: 9, color: C.dim, fontWeight: 600, textTransform: "uppercase" }}>Category</label>
+                <select value={efCat} onChange={(e) => setEfCat(e.target.value)} style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.bg, color: C.text, fontSize: 11, fontFamily: "inherit", minWidth: 120, outline: "none" }}>
+                  <option value="all">All</option>
+                  {expCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <label style={{ fontSize: 9, color: C.dim, fontWeight: 600, textTransform: "uppercase" }}>Year</label>
+                <select value={efYear} onChange={(e) => setEfYear(e.target.value)} style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.bg, color: C.text, fontSize: 11, fontFamily: "inherit", minWidth: 80, outline: "none" }}>
+                  <option value="all">All</option>
+                  {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <label style={{ fontSize: 9, color: C.dim, fontWeight: 600, textTransform: "uppercase" }}>Description</label>
+                <select value={efDesc} onChange={(e) => setEfDesc(e.target.value)} style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.bg, color: C.text, fontSize: 11, fontFamily: "inherit", minWidth: 120, maxWidth: 160, outline: "none" }}>
+                  <option value="all">All</option>
+                  {expDescriptions.map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <label style={{ fontSize: 9, color: C.dim, fontWeight: 600, textTransform: "uppercase" }}>Month</label>
+                <select value={efMonth} onChange={(e) => setEfMonth(e.target.value)} style={{ padding: "7px 10px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.bg, color: C.text, fontSize: 11, fontFamily: "inherit", minWidth: 100, outline: "none" }}>
+                  <option value="all">All</option>
+                  {expMonthNames.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+              <button onClick={clearExpFilters} style={{ padding: "7px 14px", borderRadius: 7, border: `1px solid ${C.border}`, background: "rgba(239,68,68,0.1)", color: C.red, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Clear Filters</button>
+            </div>
+
+            {/* ROW 3: Trendline – full width for prominence */}
+            <CCard title="Expense Trend">
+              <ResponsiveContainer width="100%" height={mob ? 220 : 280}>
+                <BarChart data={expTrendline} barGap={1} barCategoryGap="15%">
+                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} />
+                  <XAxis dataKey="month" tick={{ fill: C.dim, fontSize: mob ? 7 : 9 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: C.dim, fontSize: 9 }} axisLine={false} tickLine={false} width={mob ? 35 : 50} tickFormatter={(v: number) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : String(v)} />
+                  <Tooltip content={<Tip />} />
+                  <Bar dataKey="amount" name="Total Expense" fill="#8B6914" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="paidByOwner" name="Paid by Owner" fill={C.owner} radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 6 }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.muted }}><span style={{ width: 10, height: 10, borderRadius: 2, background: "#8B6914", display: "inline-block" }} />Total Expense</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.muted }}><span style={{ width: 10, height: 10, borderRadius: 2, background: C.owner, display: "inline-block" }} />Paid by Owner</span>
+              </div>
+            </CCard>
+
+            {/* ROW 4: Category breakdown + Donut side by side */}
+            <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: 14 }}>
+              <CCard title="Expense by Category">
+                <div style={{ maxHeight: mob ? 220 : 260, overflow: "auto" }}>
+                  {expByCategory.map((c, i) => {
+                    const maxVal = expByCategory[0]?.value || 1;
+                    return (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0" }}>
+                        <span style={{ fontSize: 10, color: C.muted, minWidth: 100, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right", flexShrink: 0 }}>{c.name}</span>
+                        <div style={{ flex: 1, height: 16, background: "rgba(255,255,255,0.04)", borderRadius: 3, overflow: "hidden" }}>
+                          <div style={{ width: `${(c.value / maxVal) * 100}%`, height: "100%", background: "#8B6914", borderRadius: 3 }} />
+                        </div>
+                        <span style={{ fontSize: 10, color: C.dim, minWidth: 60, textAlign: "right", flexShrink: 0 }}>{fmt(c.value)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CCard>
+              <CCard title="Paid by Owner vs Pending">
+                <ResponsiveContainer width="100%" height={mob ? 180 : 220}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "Paid by Owner", value: Math.abs(expTotalPaidByOwner) || 0.01 },
+                        { name: "Pending", value: Math.abs(expTotalPending) || 0.01 },
+                      ]}
+                      cx="50%" cy="50%" innerRadius={mob ? 40 : 55} outerRadius={mob ? 65 : 85} paddingAngle={3} dataKey="value" stroke="none"
+                    >
+                      <Cell fill={C.owner} />
+                      <Cell fill={expTotalPending >= 0 ? C.red : C.green} />
+                    </Pie>
+                    <Tooltip content={<Tip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 4 }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.muted }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: C.owner, display: "inline-block" }} />Paid by Owner</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.muted }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: expTotalPending >= 0 ? C.red : C.green, display: "inline-block" }} />Pending</span>
+                </div>
+              </CCard>
+            </div>
+
+            {/* ROW 5: Data Table – full width */}
+            <div>
+              <div className="scroll-touch scroll-touch-x" style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "auto", maxHeight: mob ? "55vh" : 480 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, minWidth: 420 }}>
+                  <thead><tr>
+                    <Th>Description</Th>
+                    <Th>Category</Th>
+                    <Th>Date</Th>
+                    <Th align="right">Amount</Th>
+                  </tr></thead>
+                  <tbody>
+                    {filteredExpenses.map((e, i) => (
+                      <tr key={i} style={{ borderBottom: `1px solid ${C.border}` }}>
+                        <td style={{ padding: "7px 12px", color: C.text, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.description || "—"}</td>
+                        <td style={{ padding: "7px 12px", color: C.muted, fontSize: 10, whiteSpace: "nowrap" }}>{e.category || "—"}</td>
+                        <td style={{ padding: "7px 12px", color: C.muted, whiteSpace: "nowrap", fontSize: 10 }}>{e.date}</td>
+                        <td style={{ padding: "7px 12px", color: C.text, fontWeight: 500, whiteSpace: "nowrap", textAlign: "right" }}>{e.amount > 0 ? fmt(e.amount.toFixed(2)) : "—"}</td>
                       </tr>
-                    </tfoot>
-                  </table>
-                </div>
-                <p style={{ color: C.dim, fontSize: 10, marginTop: 6 }}>{filteredExpenses.length} of {expenses.length} records</p>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ borderTop: `2px solid ${C.border}` }}>
+                      <td colSpan={3} style={{ padding: "8px 12px", fontWeight: 700, color: C.text, fontSize: 12 }}>Total</td>
+                      <td style={{ padding: "8px 12px", fontWeight: 700, color: C.text, fontSize: 12, textAlign: "right" }}>{fmt(filteredExpenses.reduce((s, e) => s + e.amount, 0).toFixed(2))}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
-
-              {/* RIGHT: Charts */}
-              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 14 }}>
-                {/* Distribution By Trendline */}
-                <CCard title="Distribution By Trendline">
-                  <ResponsiveContainer width="100%" height={mob ? 200 : 240}>
-                    <BarChart data={expTrendline} barGap={1} barCategoryGap="15%">
-                      <CartesianGrid strokeDasharray="3 3" stroke={C.border} />
-                      <XAxis dataKey="month" tick={{ fill: C.dim, fontSize: mob ? 7 : 9 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: C.dim, fontSize: 9 }} axisLine={false} tickLine={false} width={mob ? 35 : 50} tickFormatter={(v: number) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : String(v)} />
-                      <Tooltip content={<Tip />} />
-                      <Bar dataKey="pending" name="Total Pending Amount" fill={C.muted} radius={[2, 2, 0, 0]} />
-                      <Bar dataKey="paidByOwner" name="Total Paid by Owner" fill={C.owner} radius={[2, 2, 0, 0]} />
-                      <Bar dataKey="amount" name="Total Expense Amount" fill="#8B6914" radius={[2, 2, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                  <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 6 }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: C.muted }}><span style={{ width: 8, height: 8, borderRadius: 2, background: C.muted, display: "inline-block" }} />Total Pending Amount</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: C.muted }}><span style={{ width: 8, height: 8, borderRadius: 2, background: C.owner, display: "inline-block" }} />Total Paid by Owner</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: C.muted }}><span style={{ width: 8, height: 8, borderRadius: 2, background: "#8B6914", display: "inline-block" }} />Total Expense Amount</span>
-                  </div>
-                </CCard>
-
-                {/* Bottom row: Category Breakdown + Donut */}
-                <div style={{ display: "flex", gap: 14, flexWrap: mob ? "wrap" : "nowrap" }}>
-                  {/* Distribution By Total Expense (horizontal bar) */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <CCard title="Distribution By Total Expense">
-                      <div style={{ maxHeight: mob ? 200 : 220, overflow: "auto" }}>
-                        {expByCategory.map((c, i) => {
-                          const maxVal = expByCategory[0]?.value || 1;
-                          return (
-                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
-                              <span style={{ fontSize: 10, color: C.muted, minWidth: 90, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right", flexShrink: 0 }}>{c.name.length > 16 ? c.name.slice(0, 16) + "..." : c.name}</span>
-                              <div style={{ flex: 1, height: 14, background: "rgba(255,255,255,0.04)", borderRadius: 2, overflow: "hidden", position: "relative" }}>
-                                <div style={{ width: `${(c.value / maxVal) * 100}%`, height: "100%", background: "#8B6914", borderRadius: 2 }} />
-                              </div>
-                              <span style={{ fontSize: 9, color: C.dim, minWidth: 55, textAlign: "right", flexShrink: 0 }}>{fmt(c.value)}.00</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </CCard>
-                  </div>
-
-                  {/* Paid by Owner vs Pending Amount (donut) */}
-                  <div style={{ flex: mob ? "1 1 100%" : "0 0 44%", minWidth: 0 }}>
-                    <CCard title="Paid by Owner vs Pending Amount">
-                      <ResponsiveContainer width="100%" height={mob ? 180 : 200}>
-                        <PieChart>
-                          <Pie
-                            data={[
-                              { name: "Paid by Owner", value: Math.abs(expTotalPaidByOwner) },
-                              { name: "Pending Amount", value: Math.abs(expTotalPending) },
-                            ]}
-                            cx="50%" cy="50%" innerRadius={mob ? 35 : 50} outerRadius={mob ? 60 : 78} paddingAngle={2} dataKey="value" stroke="none"
-                          >
-                            <Cell fill={C.owner} />
-                            <Cell fill={C.muted} />
-                          </Pie>
-                          <Tooltip content={<Tip />} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 4 }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: C.muted }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: C.owner, display: "inline-block" }} />Paid by Owner</span>
-                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: C.muted }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: C.muted, display: "inline-block" }} />Pending Amount</span>
-                      </div>
-                    </CCard>
-                  </div>
-                </div>
-              </div>
+              <p style={{ color: C.dim, fontSize: 10, marginTop: 6 }}>{filteredExpenses.length} of {expenses.length} records</p>
             </div>
           </div>
         )}
