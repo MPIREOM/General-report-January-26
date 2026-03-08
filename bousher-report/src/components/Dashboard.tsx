@@ -459,7 +459,7 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 20, justifyContent: "flex-end" }}>
               <button onClick={() => setPdfModal(false)} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
-              <button disabled={!pdfMonth} onClick={() => { generateOwnerReport(data, pdfMonth, null); setPdfModal(false); }} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: !pdfMonth ? C.dim : C.green, color: "#fff", fontSize: 12, fontWeight: 600, cursor: !pdfMonth ? "not-allowed" : "pointer", fontFamily: "inherit" }}>Download PDF</button>
+              <button disabled={!pdfMonth} onClick={() => { generateOwnerReport(data, pdfMonth).catch(console.error); setPdfModal(false); }} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: !pdfMonth ? C.dim : C.green, color: "#fff", fontSize: 12, fontWeight: 600, cursor: !pdfMonth ? "not-allowed" : "pointer", fontFamily: "inherit" }}>Download PDF</button>
             </div>
           </div>
         </div>
