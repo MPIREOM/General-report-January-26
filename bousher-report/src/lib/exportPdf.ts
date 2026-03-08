@@ -129,7 +129,8 @@ export async function generateOwnerReport(
   // Dynamic imports to avoid SSR issues
   const jsPDFModule = await import("jspdf");
   const jsPDF = jsPDFModule.default;
-  await import("jspdf-autotable");
+  const autoTableModule = await import("jspdf-autotable");
+  const autoTable = autoTableModule.default;
 
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pw = doc.internal.pageSize.getWidth();
@@ -244,7 +245,7 @@ export async function generateOwnerReport(
   const tableY = splitY + 24;
 
   if (activePayments.length > 0) {
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: tableY,
       margin: { left: 14, right: 14 },
       head: [["Unit", "Tenant", "Due", "Paid", "Balance", "Status", "Days Late", "Paid To", "Prev Bal"]],
