@@ -46,6 +46,16 @@ export interface MonthlyPayment {
   prevBalance: number;
 }
 
+export interface Expense {
+  srNo: number;
+  date: string;
+  description: string;
+  category: string;
+  amount: number;
+  pendingAmount: number;
+  paidByOwner: number;
+}
+
 export interface VacancyData {
   totalUnits: number;
   vacant: number;
@@ -59,6 +69,7 @@ export interface ParsedData {
   monthlySheets: Record<string, MonthlyPayment[]>;
   paymentHistory: PaymentHistoryRow[];
   vacancy: VacancyData | null;
+  expenses: Expense[];
 }
 
 export function parseWorkbook(buffer: ArrayBuffer | Uint8Array): ParsedData {
@@ -70,6 +81,7 @@ export function parseWorkbook(buffer: ArrayBuffer | Uint8Array): ParsedData {
     monthlySheets: {},
     paymentHistory: [],
     vacancy: null,
+    expenses: [],
   };
 
   // DASHBOARD
@@ -194,6 +206,59 @@ export function parseWorkbook(buffer: ArrayBuffer | Uint8Array): ParsedData {
     }
     out.monthlySheets[sn] = payments;
   });
+
+  // EXPENSES
+  const expSheetName = wb.SheetNames.find((n) =>
+    /expense/i.test(n) || /weekly.*expense/i.test(n)
+  );
+  const ews = expSheetName ? wb.Sheets[expSheetName] : null;
+  if (ews) {
+    const rows: any[][] = XLSX.utils.sheet_to_json(ews, { header: 1, defval: null, raw: false });
+    let hi = -1;
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i] && rows[i][0] != null && /sr\s*no|#/i.test(String(rows[i][0]))) { hi = i; break; }
+    }
+    if (hi < 0) {
+      // fallback: first row is header
+      hi = 0;
+    }
+    for (let i = hi + 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r[0] == null) continue;
+      const srNo = Number(r[0]);
+      if (isNaN(srNo) || srNo <= 0) continue;
+      const desc = String(r[2] ?? "").trim();
+      const cat = String(r[3] ?? "").trim();
+      if (!desc && !cat) continue;
+      // Skip settlement rows
+      const catLower = cat.toLowerCase();
+      if (catLower.includes("pending amount to mpire") || catLower.includes("paid by owner to mpire")) continue;
+      const amt = Number(r[4]) || 0;
+      const pending = Number(r[5]) || 0;
+      const paidOwner = Number(r[6]) || 0;
+      // Parse date
+      let dateStr = "";
+      if (r[1] != null) {
+        const raw = r[1];
+        if (raw instanceof Date) {
+          dateStr = raw.toISOString().split("T")[0];
+        } else {
+          const s = String(raw).trim();
+          // Handle various date formats
+          if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+            dateStr = s.slice(0, 10);
+          } else if (/^\d{1,2}\/\d{1,2}\/\d{2,4}/.test(s)) {
+            const parts = s.split("/");
+            const y = parts[2].length === 2 ? "20" + parts[2] : parts[2];
+            dateStr = `${y}-${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`;
+          } else {
+            dateStr = s;
+          }
+        }
+      }
+      out.expenses.push({ srNo, date: dateStr, description: desc, category: cat, amount: amt, pendingAmount: pending, paidByOwner: paidOwner });
+    }
+  }
 
   // VACANCY
   const vws = wb.Sheets["Vacancy Tracker"];

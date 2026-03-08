@@ -41,6 +41,7 @@ const SAMPLE_DATA: ParsedData = {
     { unit: "1-01", tenant: "Omar Khalil", history: ["✗", "✗"], timesLate: 2, avgDaysLate: 15 },
   ],
   vacancy: { totalUnits: 50, vacant: 2, occupancy: 0.96 },
+  expenses: [],
 };
 
 async function fetchDashboardData(): Promise<{ data: ParsedData; source: "live" | "sample" }> {

@@ -265,7 +265,51 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
   const am = sm || (msk.length ? msk[msk.length - 1] : "");
   const ap = ms[am] || [];
   const lt = ph.filter((p) => p.timesLate >= 2);
-  const tabs = ["Overview", "Monthly Detail", "Tenants", "Payment History"];
+  const expenses = data.expenses || [];
+  const [ef, setEf] = useState("all");
+  const [es, setEs] = useState("");
+
+  // Expense categories (excluding settlement rows)
+  const expCategories = useMemo(() => {
+    const cats = new Set<string>();
+    expenses.forEach((e) => { if (e.category) cats.add(e.category); });
+    return Array.from(cats).sort();
+  }, [expenses]);
+
+  // Filtered expenses
+  const filteredExpenses = useMemo(() => {
+    let ex = expenses;
+    if (ef !== "all") ex = ex.filter((e) => e.category === ef);
+    if (es) { const s = es.toLowerCase(); ex = ex.filter((e) => e.description.toLowerCase().includes(s) || e.category.toLowerCase().includes(s)); }
+    return ex;
+  }, [expenses, ef, es]);
+
+  // Expense aggregations
+  const expTotalAmount = useMemo(() => expenses.reduce((s, e) => s + e.amount, 0), [expenses]);
+  const expByCategory = useMemo(() => {
+    const m: Record<string, number> = {};
+    expenses.forEach((e) => { m[e.category] = (m[e.category] || 0) + e.amount; });
+    return Object.entries(m).map(([name, value]) => ({ name, value: Math.round(value) })).sort((a, b) => b.value - a.value);
+  }, [expenses]);
+  const expByMonth = useMemo(() => {
+    const m: Record<string, number> = {};
+    expenses.forEach((e) => {
+      if (!e.date) return;
+      const key = e.date.slice(0, 7); // YYYY-MM
+      m[key] = (m[key] || 0) + e.amount;
+    });
+    const moNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return Object.entries(m).sort(([a],[b]) => a.localeCompare(b)).map(([k, v]) => {
+      const [y, mo] = k.split("-");
+      return { month: `${moNames[Number(mo)-1]} ${y.slice(2)}`, amount: Math.round(v) };
+    });
+  }, [expenses]);
+
+  // Building vs private split
+  const expBuilding = useMemo(() => expenses.filter((e) => e.category !== "Private expenses").reduce((s, e) => s + e.amount, 0), [expenses]);
+  const expPrivate = useMemo(() => expenses.filter((e) => e.category === "Private expenses").reduce((s, e) => s + e.amount, 0), [expenses]);
+
+  const tabs = ["Overview", "Monthly Detail", "Tenants", "Payment History", ...(expenses.length > 0 ? ["Expenses"] : [])];
 
   return (
     <div className="min-h-screen-safe" style={{ background: C.bg, color: C.text }}>
@@ -501,6 +545,96 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
                 </div>
               </div>
             )}
+          </div>
+        )}
+        {/* EXPENSES */}
+        {tab === "Expenses" && expenses.length > 0 && (
+          <div>
+            <div className="grid-kpi">
+              <KPI label="Total Expenses" value={`${fmt(Math.round(expTotalAmount))} OMR`} sub={`${expenses.length} entries`} color={C.red} />
+              <KPI label="Building Expenses" value={`${fmt(Math.round(expBuilding))} OMR`} sub={`${((expBuilding / expTotalAmount) * 100).toFixed(0)}% of total`} color={C.teal} />
+              <KPI label="Private Expenses" value={`${fmt(Math.round(expPrivate))} OMR`} sub={`${((expPrivate / expTotalAmount) * 100).toFixed(0)}% of total`} color={C.amber} />
+              <KPI label="Monthly Avg" value={`${fmt(expByMonth.length > 0 ? Math.round(expTotalAmount / expByMonth.length) : 0)} OMR`} sub={`${expByMonth.length} months`} color={C.mpire} />
+            </div>
+
+            <Hdr icon="📊">Monthly Expenses Trend</Hdr>
+            <CCard title="Monthly Total (OMR)">
+              <ResponsiveContainer width="100%" height={mob ? 180 : 220}>
+                <BarChart data={expByMonth} barGap={3}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={C.border}/>
+                  <XAxis dataKey="month" tick={{fill:C.dim,fontSize:mob?7:9}} axisLine={false} tickLine={false}/>
+                  <YAxis tick={{fill:C.dim,fontSize:9}} axisLine={false} tickLine={false} width={mob?40:60}/>
+                  <Tooltip content={<Tip/>}/>
+                  <Bar dataKey="amount" name="Amount" fill={C.teal} radius={[3,3,0,0]}/>
+                </BarChart>
+              </ResponsiveContainer>
+            </CCard>
+
+            <div className="grid-charts" style={{ marginTop: 12 }}>
+              <CCard title="By Category">
+                <ResponsiveContainer width="100%" height={mob ? 200 : 240}>
+                  <PieChart>
+                    <Pie data={expByCategory.slice(0, 8)} cx="50%" cy="50%" innerRadius={mob?35:45} outerRadius={mob?60:75} paddingAngle={2} dataKey="value" stroke="none">
+                      {expByCategory.slice(0, 8).map((_, i) => <Cell key={i} fill={[C.teal, C.mpire, C.owner, C.amber, C.green, C.red, "#8b5cf6", "#ec4899"][i % 8]} />)}
+                    </Pie>
+                    <Tooltip content={<Tip/>}/>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div style={{display:"flex",flexWrap:"wrap",justifyContent:"center",gap:8,marginTop:4}}>
+                  {expByCategory.slice(0, 8).map((c, i) => (
+                    <span key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:9,color:C.muted}}>
+                      <span style={{width:7,height:7,borderRadius:2,background:[C.teal, C.mpire, C.owner, C.amber, C.green, C.red, "#8b5cf6", "#ec4899"][i % 8],display:"inline-block"}}/>
+                      {c.name}: {fmt(c.value)}
+                    </span>
+                  ))}
+                </div>
+              </CCard>
+              <CCard title="Category Breakdown">
+                <div style={{maxHeight: mob ? 250 : 280, overflow:"auto"}}>
+                  {expByCategory.map((c, i) => {
+                    const pctVal = (c.value / expTotalAmount) * 100;
+                    return (
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:i < expByCategory.length - 1 ? `1px solid ${C.border}` : "none"}}>
+                        <span style={{flex:1,fontSize:11,color:C.muted,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.name}</span>
+                        <div style={{width:mob?80:120,height:6,background:"rgba(255,255,255,0.05)",borderRadius:3,overflow:"hidden",flexShrink:0}}>
+                          <div style={{width:`${pctVal}%`,height:"100%",background:[C.teal, C.mpire, C.owner, C.amber, C.green, C.red, "#8b5cf6", "#ec4899"][i % 8],borderRadius:3}}/>
+                        </div>
+                        <span style={{fontSize:11,color:C.text,fontWeight:600,minWidth:60,textAlign:"right"}}>{fmt(c.value)}</span>
+                        <span style={{fontSize:9,color:C.dim,minWidth:35,textAlign:"right"}}>{pctVal.toFixed(1)}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CCard>
+            </div>
+
+            <Hdr icon="📋">Expense Records</Hdr>
+            <div style={{display:"flex",gap:8,margin:"0 0 12px",flexWrap:"wrap",alignItems:"center"}}>
+              <input value={es} onChange={(e)=>setEs(e.target.value)} placeholder="Search expenses..." style={{padding:"10px 14px",borderRadius:7,border:`1px solid ${C.border}`,background:C.card,color:C.text,fontSize:13,fontFamily:"inherit",width: mob ? "100%" : 180,outline:"none",minHeight:36}}/>
+              <div className="tab-scroll" style={{display:"flex",gap:6,flexWrap:mob?"nowrap":"wrap"}}>
+                <Fb active={ef==="all"} onClick={()=>setEf("all")}>All ({expenses.length})</Fb>
+                {expCategories.map((cat) => (
+                  <Fb key={cat} active={ef===cat} onClick={()=>setEf(cat)}>{cat} ({expenses.filter(e=>e.category===cat).length})</Fb>
+                ))}
+              </div>
+            </div>
+            <div className="scroll-touch scroll-touch-x" style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"auto",maxHeight: mob ? "65vh" : 440}}>
+              <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,minWidth: mob ? 640 : "auto"}}>
+                <thead><tr>{["#","Date","Description","Category","Amount"].map((h)=><Th key={h}>{h}</Th>)}</tr></thead>
+                <tbody>
+                  {filteredExpenses.map((e, i) => (
+                    <tr key={i} style={{borderBottom:`1px solid ${C.border}`}}>
+                      <td style={{padding:"7px 12px",color:C.dim,whiteSpace:"nowrap"}}>{e.srNo}</td>
+                      <td style={{padding:"7px 12px",color:C.muted,whiteSpace:"nowrap"}}>{e.date}</td>
+                      <td style={{padding:"7px 12px",color:C.text,maxWidth:220,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.description}</td>
+                      <td style={{padding:"7px 12px"}}><span style={{padding:"2px 8px",borderRadius:14,fontSize:10,fontWeight:500,background:e.category==="Private expenses"?"rgba(245,158,11,0.12)":e.category==="Salary"?"rgba(99,102,241,0.12)":e.category.includes("Repair")?"rgba(239,68,68,0.12)":"rgba(20,184,166,0.12)",color:e.category==="Private expenses"?C.amber:e.category==="Salary"?C.mpire:e.category.includes("Repair")?C.red:C.teal}}>{e.category}</span></td>
+                      <td style={{padding:"7px 12px",color:C.text,fontWeight:500,whiteSpace:"nowrap",textAlign:"right"}}>{e.amount > 0 ? fmt(e.amount.toFixed(2)) : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p style={{color:C.dim,fontSize:10,marginTop:6}}>{filteredExpenses.length} of {expenses.length} · Total: {fmt(Math.round(filteredExpenses.reduce((s, e) => s + e.amount, 0)))} OMR</p>
           </div>
         )}
       </main>
