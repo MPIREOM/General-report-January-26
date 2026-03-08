@@ -238,10 +238,11 @@ export function parseWorkbook(buffer: ArrayBuffer | Uint8Array): ParsedData {
       if (isNaN(srNo) || srNo <= 0) continue;
       const desc = String(r[2] ?? "").trim();
       const cat = String(r[3] ?? "").trim();
-      if (!desc && !cat) continue;
       const amt = parseNum(r[4]);
       const pending = parseNum(r[5]);
       const paidOwner = parseNum(r[6]);
+      // Skip rows with no data at all
+      if (!desc && !cat && amt === 0 && pending === 0 && paidOwner === 0) continue;
       // Parse date
       let dateStr = "";
       if (r[1] != null) {
@@ -369,10 +370,11 @@ export function parseExpensesFile(buffer: ArrayBuffer | Uint8Array): Expense[] {
     if (isNaN(srNo) || srNo <= 0) continue;
     const desc = String(r[2] ?? "").trim();
     const cat = String(r[3] ?? "").trim();
-    if (!desc && !cat) continue;
     const amt = parseNum(r[4]);
     const pending = parseNum(r[5]);
     const paidOwner = parseNum(r[6]);
+    // Skip rows with no data at all
+    if (!desc && !cat && amt === 0 && pending === 0 && paidOwner === 0) continue;
     let dateStr = "";
     if (r[1] != null) {
       const raw = r[1];

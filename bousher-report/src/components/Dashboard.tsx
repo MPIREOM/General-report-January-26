@@ -334,7 +334,7 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
   // KPIs on filtered data
   const expTotalAmount = useMemo(() => filteredExpenses.reduce((s, e) => s + e.amount, 0), [filteredExpenses]);
   const expTotalPaidByOwner = useMemo(() => filteredExpenses.reduce((s, e) => s + e.paidByOwner, 0), [filteredExpenses]);
-  const expTotalPending = useMemo(() => filteredExpenses.reduce((s, e) => s + e.pendingAmount, 0), [filteredExpenses]);
+  const expTotalPending = useMemo(() => expTotalAmount - expTotalPaidByOwner, [expTotalAmount, expTotalPaidByOwner]);
 
   const expByCategory = useMemo(() => {
     const m: Record<string, number> = {};
@@ -625,8 +625,8 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
                   <p style={{ margin: "6px 0 0", fontSize: 26, fontWeight: 800, color: C.owner, letterSpacing: "-0.02em" }}>{fmt(expTotalPaidByOwner.toFixed(2))}</p>
                 </div>
                 <div style={{ flex: "1 1 180px", background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 20px" }}>
-                  <p style={{ margin: 0, fontSize: 11, color: C.muted, fontWeight: 500 }}>Total Pending Amount</p>
-                  <p style={{ margin: "6px 0 0", fontSize: 26, fontWeight: 800, color: expTotalPending < 0 ? C.green : C.red, letterSpacing: "-0.02em" }}>{expTotalPending < 0 ? "-" : ""}{fmt(Math.abs(expTotalPending).toFixed(2))}</p>
+                  <p style={{ margin: 0, fontSize: 11, color: C.muted, fontWeight: 500 }}>{expTotalPending >= 0 ? "Total Pending to MPIRE" : "Total Pending to Owner"}</p>
+                  <p style={{ margin: "6px 0 0", fontSize: 26, fontWeight: 800, color: expTotalPending >= 0 ? C.red : C.green, letterSpacing: "-0.02em" }}>{fmt(Math.abs(expTotalPending).toFixed(2))}</p>
                 </div>
               </div>
               {/* Filters */}
