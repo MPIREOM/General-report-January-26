@@ -6,6 +6,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, Area, AreaChart,
 } from "recharts";
 import { parseWorkbook, parseExpensesFile, ParsedData } from "@/lib/parser";
+import { generateOwnerReport } from "@/lib/exportPdf";
 
 const C = {
   bg: "#0B0F1A", card: "#111827", border: "#1e293b",
@@ -190,6 +191,8 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
   const [emailTo, setEmailTo] = useState("");
   const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [emailMsg, setEmailMsg] = useState("");
+  const [pdfModal, setPdfModal] = useState(false);
+  const [pdfMonth, setPdfMonth] = useState("");
 
   const sendTestEmail = async () => {
     if (!emailTo || !emailTo.includes("@")) { setEmailMsg("Enter a valid email address"); setEmailStatus("error"); return; }
@@ -396,6 +399,7 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
             </div>
             <input id="update-file" type="file" accept=".xlsx,.xls" onChange={(e) => { handleFile(e.target.files?.[0]); e.target.value = ""; }} style={{ display: "none" }} />
             <input id="expenses-file" type="file" accept=".xlsx,.xls" onChange={(e) => { handleExpensesFile(e.target.files?.[0]); e.target.value = ""; }} style={{ display: "none" }} />
+            <button onClick={() => { setPdfModal(true); setPdfMonth(""); }} style={{ padding: "8px 14px", minHeight: 36, borderRadius: 8, border: `1px solid ${C.green}`, background: "rgba(34,197,94,0.1)", color: C.green, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>PDF Report</button>
             <button onClick={() => { setEmailModal(true); setEmailStatus("idle"); setEmailMsg(""); }} style={{ padding: "8px 14px", minHeight: 36, borderRadius: 8, border: `1px solid ${C.mpire}`, background: "rgba(99,102,241,0.1)", color: C.mpire, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>✉ Test Email</button>
             <button onClick={() => document.getElementById("expenses-file")?.click()} style={{ padding: "8px 14px", minHeight: 36, borderRadius: 8, border: `1px solid ${C.amber}`, background: "rgba(245,158,11,0.1)", color: C.amber, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>📥 Expenses</button>
             <button onClick={() => document.getElementById("update-file")?.click()} style={{ padding: "8px 14px", minHeight: 36, borderRadius: 8, border: `1px solid ${C.teal}`, background: "rgba(20,184,166,0.1)", color: C.teal, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>📤 Update Data</button>
@@ -436,6 +440,26 @@ function DashView({ data, onUpdate }: { data: ParsedData; onUpdate: (d: ParsedDa
               <button onClick={sendTestEmail} disabled={emailStatus === "sending"} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: emailStatus === "sending" ? C.dim : C.mpire, color: "#fff", fontSize: 12, fontWeight: 600, cursor: emailStatus === "sending" ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
                 {emailStatus === "sending" ? "Sending..." : emailStatus === "sent" ? "Send Again" : "Send Test"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PDF Export Modal */}
+      {pdfModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setPdfModal(false)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24, maxWidth: 440, width: "100%" }}>
+            <h3 style={{ color: C.text, fontSize: 16, fontWeight: 700, margin: "0 0 4px" }}>Export PDF Report</h3>
+            <p style={{ color: C.dim, fontSize: 11, margin: "0 0 16px" }}>Select the month for the tenant payments page. Expenses overview covers all time.</p>
+            <label style={{ fontSize: 9, color: C.dim, fontWeight: 600, textTransform: "uppercase", marginBottom: 4, display: "block" }}>Select Month</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, maxHeight: 200, overflow: "auto", padding: "4px 0" }}>
+              {months.map((m) => (
+                <button key={m} onClick={() => setPdfMonth(m)} style={{ padding: "6px 12px", borderRadius: 7, border: `1px solid ${pdfMonth === m ? C.green : C.border}`, background: pdfMonth === m ? "rgba(34,197,94,0.15)" : "transparent", color: pdfMonth === m ? C.green : C.muted, fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }}>{m}</button>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 20, justifyContent: "flex-end" }}>
+              <button onClick={() => setPdfModal(false)} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+              <button disabled={!pdfMonth} onClick={() => { generateOwnerReport(data, pdfMonth, null); setPdfModal(false); }} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: !pdfMonth ? C.dim : C.green, color: "#fff", fontSize: 12, fontWeight: 600, cursor: !pdfMonth ? "not-allowed" : "pointer", fontFamily: "inherit" }}>Download PDF</button>
             </div>
           </div>
         </div>
