@@ -291,9 +291,20 @@ export function parseWorkbook(buffer: ArrayBuffer | Uint8Array): ParsedData {
       const yd = Number(ap[1]) - Number(bp[1]);
       return yd !== 0 ? yd : moOrder.indexOf(ap[0].toUpperCase()) - moOrder.indexOf(bp[0].toUpperCase());
     };
-    const dbMonths = new Set(out.dashboard.months.map((m) => m.toUpperCase()));
+    // Normalize month strings like "Aug '25", "Aug 25", "AUGUST 25" → "AUGUST 25"
+    const moShort = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+    const normalizeMonth = (m: string): string => {
+      const parts = m.trim().replace(/'/g, "").split(/\s+/);
+      if (parts.length < 2) return m.toUpperCase();
+      const name = parts[0].toUpperCase();
+      const year = parts[1].length === 2 ? parts[1] : parts[1].slice(-2);
+      const idx = moShort.indexOf(name.slice(0, 3));
+      if (idx >= 0) return `${moOrder[idx]} ${year}`;
+      return m.toUpperCase();
+    };
+    const dbMonthsNorm = new Set(out.dashboard.months.map(normalizeMonth));
     const sheetMonths = Object.keys(out.monthlySheets)
-      .filter((m) => !dbMonths.has(m.toUpperCase()))
+      .filter((m) => !dbMonthsNorm.has(normalizeMonth(m)))
       .sort(sortMonth);
 
     for (const m of sheetMonths) {
