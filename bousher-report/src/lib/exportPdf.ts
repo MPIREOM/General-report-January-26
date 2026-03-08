@@ -1,17 +1,7 @@
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 import type { ParsedData } from "./parser";
 
-// Extend jsPDF with autotable
-declare module "jspdf" {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-    lastAutoTable: { finalY: number };
-  }
-}
-
 const COLORS = {
-  primary: [20, 184, 166] as [number, number, number],     // teal
+  primary: [20, 184, 166] as [number, number, number],
   mpire: [99, 102, 241] as [number, number, number],
   owner: [249, 115, 22] as [number, number, number],
   red: [239, 68, 68] as [number, number, number],
@@ -28,9 +18,8 @@ function fmtNum(n: number): string {
   return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function drawHeader(doc: jsPDF, title: string) {
+function drawHeader(doc: any, title: string) {
   const pw = doc.internal.pageSize.getWidth();
-  // Header bar
   doc.setFillColor(...COLORS.dark);
   doc.rect(0, 0, pw, 22, "F");
   doc.setFontSize(14);
@@ -41,32 +30,27 @@ function drawHeader(doc: jsPDF, title: string) {
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...COLORS.muted);
   doc.text("RENT COLLECTION", 14, 19);
-  // Title
   doc.setFontSize(9);
   doc.setTextColor(...COLORS.white);
   doc.text(title, pw - 14, 14, { align: "right" });
 }
 
 function drawKpiCard(
-  doc: jsPDF,
+  doc: any,
   x: number, y: number, w: number, h: number,
   label: string, value: string,
   accentColor: [number, number, number],
   valueColor: [number, number, number]
 ) {
-  // Card background
   doc.setFillColor(...COLORS.lightBg);
   doc.setDrawColor(...COLORS.border);
   doc.roundedRect(x, y, w, h, 3, 3, "FD");
-  // Accent bar
   doc.setFillColor(...accentColor);
   doc.rect(x, y + 1, 2, h - 2, "F");
-  // Label
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...COLORS.muted);
   doc.text(label.toUpperCase(), x + 7, y + 9);
-  // Value
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...valueColor);
@@ -74,7 +58,7 @@ function drawKpiCard(
 }
 
 function drawBarChart(
-  doc: jsPDF,
+  doc: any,
   x: number, y: number, w: number, h: number,
   data: { month: string; prev: number; cur: number }[],
   prevLabel: string, curLabel: string
@@ -83,18 +67,15 @@ function drawBarChart(
   const chartY = y + 12;
   const maxVal = Math.max(...data.map((d) => Math.max(d.prev, d.cur)), 1);
 
-  // Background
   doc.setFillColor(...COLORS.white);
   doc.setDrawColor(...COLORS.border);
   doc.roundedRect(x, y, w, h, 3, 3, "FD");
 
-  // Title
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...COLORS.text);
-  doc.text("EXPENSE TREND — YEAR OVER YEAR", x + 6, y + 8);
+  doc.text("EXPENSE TREND \u2014 YEAR OVER YEAR", x + 6, y + 8);
 
-  // Grid lines
   const gridSteps = 4;
   doc.setDrawColor(...COLORS.border);
   doc.setLineWidth(0.2);
@@ -107,7 +88,6 @@ function drawBarChart(
     doc.text(val >= 1000 ? `${(val / 1000).toFixed(0)}K` : String(Math.round(val)), x + 6, gy + 1.5);
   }
 
-  // Bars
   const barAreaW = w - 36;
   const groupW = barAreaW / data.length;
   const barW = groupW * 0.3;
@@ -117,24 +97,19 @@ function drawBarChart(
     const gx = x + 30 + i * groupW;
     const prevH = (d.prev / maxVal) * chartH;
     const curH = (d.cur / maxVal) * chartH;
-
-    // Previous year bar
     if (d.prev > 0) {
       doc.setFillColor(...COLORS.muted);
       doc.rect(gx + gap, chartY + chartH - prevH, barW, prevH, "F");
     }
-    // Current year bar
     if (d.cur > 0) {
       doc.setFillColor(...COLORS.primary);
       doc.rect(gx + gap + barW + 1, chartY + chartH - curH, barW, curH, "F");
     }
-    // Month label
     doc.setFontSize(5.5);
     doc.setTextColor(...COLORS.muted);
     doc.text(d.month, gx + groupW / 2, chartY + chartH + 5, { align: "center" });
   });
 
-  // Legend
   const ly = y + h - 6;
   const lx = x + w / 2 - 30;
   doc.setFillColor(...COLORS.muted);
@@ -150,8 +125,12 @@ function drawBarChart(
 export async function generateOwnerReport(
   data: ParsedData,
   selectedMonth: string,
-  chartElement: HTMLElement | null
 ) {
+  // Dynamic imports to avoid SSR issues
+  const jsPDFModule = await import("jspdf");
+  const jsPDF = jsPDFModule.default;
+  await import("jspdf-autotable");
+
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
@@ -162,7 +141,6 @@ export async function generateOwnerReport(
   // ─── PAGE 1: Expenses Overview ───
   drawHeader(doc, "Expenses Overview");
 
-  // KPIs
   const totalAmount = expenses.reduce((s, e) => s + e.amount, 0);
   const totalPaidByOwner = expenses.reduce((s, e) => s + e.paidByOwner, 0);
   const totalPending = totalAmount - totalPaidByOwner;
@@ -175,7 +153,6 @@ export async function generateOwnerReport(
   drawKpiCard(doc, 14 + kpiW + 7, kpiY, kpiW, 28, "Total Paid by Owner", fmtNum(totalPaidByOwner), COLORS.owner, COLORS.owner);
   drawKpiCard(doc, 14 + (kpiW + 7) * 2, kpiY, kpiW, 28, pendingLabel, fmtNum(Math.abs(totalPending)), pendingColor, pendingColor);
 
-  // Expense trend chart (drawn manually)
   const moShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const curYear = new Date().getFullYear();
   const prevYear = curYear - 1;
@@ -197,21 +174,19 @@ export async function generateOwnerReport(
 
   drawBarChart(doc, 14, 62, pw - 28, 90, chartData, String(prevYear), String(curYear));
 
-  // Footer
   doc.setFontSize(6);
   doc.setTextColor(...COLORS.muted);
-  doc.text("MPIRE Property Management · Muscat, Oman", pw / 2, ph - 6, { align: "center" });
+  doc.text("MPIRE Property Management \u00B7 Muscat, Oman", pw / 2, ph - 6, { align: "center" });
   doc.text(`Generated: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`, pw - 14, ph - 6, { align: "right" });
 
   // ─── PAGE 2: Tenant Payments for Selected Month ───
   doc.addPage("a4", "landscape");
-  drawHeader(doc, `Tenant Payments — ${selectedMonth}`);
+  drawHeader(doc, `Tenant Payments \u2014 ${selectedMonth}`);
 
   const mi = months.indexOf(selectedMonth);
   const idx = mi >= 0 ? mi : months.length - 1;
   const monthLabel = months[idx] || selectedMonth;
 
-  // Summary KPIs
   const due = db.totalDue[idx] || 0;
   const collected = db.totalCollected[idx] || 0;
   const outstanding = db.totalOutstanding[idx] || 0;
@@ -223,7 +198,6 @@ export async function generateOwnerReport(
   drawKpiCard(doc, 14 + (kpi2W + 7) * 2, 28, kpi2W, 26, "Outstanding", `${fmtNum(outstanding)} OMR`, COLORS.red, COLORS.red);
   drawKpiCard(doc, 14 + (kpi2W + 7) * 3, 28, kpi2W, 26, "Collection Rate", `${(rate * 100).toFixed(1)}%`, COLORS.primary, COLORS.text);
 
-  // MPIRE vs Owner split
   const mpireDue = db.mpireDue[idx] || 0;
   const mpireCol = db.mpireCollected[idx] || 0;
   const mpireOut = db.mpireOutstanding[idx] || 0;
@@ -231,11 +205,10 @@ export async function generateOwnerReport(
   const ownerCol = db.ownerCollected[idx] || 0;
   const ownerOut = db.ownerOutstanding[idx] || 0;
 
-  let splitY = 60;
-  // MPIRE split
+  const splitY = 60;
+  const splitW = (pw - 35) / 2;
   doc.setFillColor(...COLORS.lightBg);
   doc.setDrawColor(...COLORS.border);
-  const splitW = (pw - 35) / 2;
   doc.roundedRect(14, splitY, splitW, 18, 2, 2, "FD");
   doc.setFillColor(...COLORS.mpire);
   doc.rect(14, splitY + 1, 2, 16, "F");
@@ -250,7 +223,6 @@ export async function generateOwnerReport(
   doc.text(`Collected: ${fmtNum(mpireCol)}`, 60, splitY + 11);
   doc.text(`Outstanding: ${fmtNum(mpireOut)}`, 100, splitY + 11);
 
-  // Owner split
   doc.setFillColor(...COLORS.lightBg);
   doc.roundedRect(14 + splitW + 7, splitY, splitW, 18, 2, 2, "FD");
   doc.setFillColor(...COLORS.owner);
@@ -266,35 +238,26 @@ export async function generateOwnerReport(
   doc.text(`Collected: ${fmtNum(ownerCol)}`, 14 + splitW + 53, splitY + 11);
   doc.text(`Outstanding: ${fmtNum(ownerOut)}`, 14 + splitW + 93, splitY + 11);
 
-  // Tenant payment table
-  const moArr = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
-  const msk = Object.keys(data.monthlySheets).sort((a, b) => {
-    const ap = a.split(" "), bp = b.split(" ");
-    const yd = Number(ap[1]) - Number(bp[1]);
-    return yd !== 0 ? yd : moArr.indexOf(ap[0].toUpperCase()) - moArr.indexOf(bp[0].toUpperCase());
-  });
-
-  // Find the monthly sheet that matches the selected month
   const payments = data.monthlySheets[selectedMonth] || [];
-  const activePayments = payments.filter((p) => p.status !== "N/A");
+  const activePayments = payments.filter((p: any) => p.status !== "N/A");
 
   const tableY = splitY + 24;
 
   if (activePayments.length > 0) {
-    doc.autoTable({
+    (doc as any).autoTable({
       startY: tableY,
       margin: { left: 14, right: 14 },
       head: [["Unit", "Tenant", "Due", "Paid", "Balance", "Status", "Days Late", "Paid To", "Prev Bal"]],
-      body: activePayments.map((p) => [
+      body: activePayments.map((p: any) => [
         p.unit,
         p.tenant,
         fmtNum(p.due),
         fmtNum(p.paid),
         fmtNum(p.balance),
         p.status,
-        p.daysLate > 0 ? String(p.daysLate) : "—",
+        p.daysLate > 0 ? String(p.daysLate) : "\u2014",
         p.paidTo,
-        p.prevBalance ? fmtNum(p.prevBalance) : "—",
+        p.prevBalance ? fmtNum(p.prevBalance) : "\u2014",
       ]),
       styles: {
         fontSize: 6.5,
@@ -321,18 +284,16 @@ export async function generateOwnerReport(
         7: { halign: "center" },
         8: { halign: "right" },
       },
-      didParseCell: (data: any) => {
-        if (data.section === "body") {
-          // Color status
-          if (data.column.index === 5) {
-            if (data.cell.raw === "Paid") data.cell.styles.textColor = COLORS.green;
-            else if (data.cell.raw === "Pending") data.cell.styles.textColor = COLORS.red;
-            else if (data.cell.raw === "Partial") data.cell.styles.textColor = COLORS.owner;
+      didParseCell: (hookData: any) => {
+        if (hookData.section === "body") {
+          if (hookData.column.index === 5) {
+            if (hookData.cell.raw === "Paid") hookData.cell.styles.textColor = COLORS.green;
+            else if (hookData.cell.raw === "Pending") hookData.cell.styles.textColor = COLORS.red;
+            else if (hookData.cell.raw === "Partial") hookData.cell.styles.textColor = COLORS.owner;
           }
-          // Color paid to
-          if (data.column.index === 7) {
-            if (data.cell.raw === "MPIRE") data.cell.styles.textColor = COLORS.mpire;
-            else if (data.cell.raw === "OWNER") data.cell.styles.textColor = COLORS.owner;
+          if (hookData.column.index === 7) {
+            if (hookData.cell.raw === "MPIRE") hookData.cell.styles.textColor = COLORS.mpire;
+            else if (hookData.cell.raw === "OWNER") hookData.cell.styles.textColor = COLORS.owner;
           }
         }
       },
@@ -343,12 +304,10 @@ export async function generateOwnerReport(
     doc.text("No payment data available for this month.", pw / 2, tableY + 10, { align: "center" });
   }
 
-  // Footer page 2
   doc.setFontSize(6);
   doc.setTextColor(...COLORS.muted);
-  doc.text("MPIRE Property Management · Muscat, Oman", pw / 2, ph - 6, { align: "center" });
+  doc.text("MPIRE Property Management \u00B7 Muscat, Oman", pw / 2, ph - 6, { align: "center" });
   doc.text(`Generated: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`, pw - 14, ph - 6, { align: "right" });
 
-  // Save
   doc.save(`MPIRE_Owner_Report_${monthLabel.replace(/\s+/g, "_")}.pdf`);
 }
